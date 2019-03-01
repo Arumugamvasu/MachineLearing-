@@ -2,21 +2,24 @@
 """
 Created on Thu Feb 21 16:44:49 2019
 
-@author: LBITIND
+@author: Arumugam
 """
 
-import numpy as np
-import pandas as pd
+# import lib
 import get_data
 import matplotlib.pyplot as plt
-import lable_data
 import seaborn as sns
 from sklearn.metrics import confusion_matrix,classification_report
 from sklearn.preprocessing import StandardScaler, LabelEncoder
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import accuracy_score
+
+
+
 
 # data collection
+
 data_path='oil_data_set.xlsx'
 oil_data=get_data.get_data(data_path)
 iol_in_data=oil_data.load_data()
@@ -54,13 +57,14 @@ iol_in_data['weather_conditions']=label_qulity.fit_transform(iol_in_data['weathe
 
 
 # seperate the dataset to respose variable and feature variable
-X_x=iol_in_data.drop('oil_price_dollars',axis=1)   # Training fetaure 
-X=X_x.drop('date',axis=1)
+
+X=iol_in_data.drop(['oil_price_dollars','date'],axis=1)          # Training fetaure 
 Y=iol_in_data['oil_price_dollars'].astype('int')               # target lable for training features
 
 #lab_enc = LabelEncoder()
 #encoded = lab_enc.fit_transform(Y)
 #decode=lab_enc.rfit_transform(encoded)
+
 # Train and test data split 
 x_train,x_test,y_train,y_test=train_test_split(X,Y,test_size=0.2,random_state=42)
 
@@ -72,33 +76,29 @@ x_train=scaller.fit_transform(x_train)
 x_test=scaller.transform(x_test)
 
 
-# random forest classification
+# random forest classification initialization 
 rfc=RandomForestClassifier(n_estimators=200)
 rfc.fit(x_train,y_train)
 pred_rfc=rfc.predict(x_test)
 
-# lets show our model perfomance 
-print(classification_report(y_test,pred_rfc))
-print(confusion_matrix(y_test,pred_rfc))
-com_mat=confusion_matrix(y_test,pred_rfc)
+# lets show our model perfomance for our RFC model
+print('classification_report = {}'.format(classification_report(y_test,pred_rfc)))
+print('confusion_matrix = {}'.format(confusion_matrix(y_test,pred_rfc)))
 
-from sklearn.metrics import accuracy_score
-cm=accuracy_score(y_test,pred_rfc)
-print('accuracy_score = {} '.format(cm))
 
-plt.plot(y_test,pred_rfc)
-plt.xlabel('Normal price valur')
-plt.ylabel('pridict Oil_price')
-plt.show()
+
+
+print('accuracy_score = {} '.format(accuracy_score(y_test,pred_rfc)*100))
+
 
 labels = [0,1]
-sns.heatmap(com_mat, annot=True, cmap="YlGnBu", fmt=".3f", xticklabels=labels, yticklabels=labels)
+sns.heatmap(confusion_matrix(y_test,pred_rfc), annot=True, cmap="YlGnBu", fmt=".3f", xticklabels=labels, yticklabels=labels)
 plt.show()
 
 
 
-# testing new raw data
+# testing new raw data format [Crude_oil_demant,Crude_oil_spply,weather_conditions,Monthly_Change]
 
-x_new=[[1.096,-0.8956,0.43302,0.01119]]
-#x_tran=scaller.transform(x_new)
-print(rfc.predict(x_new))
+x_new=[[0.62,48,1,0.024]]
+x_new_fil=scaller.transform(x_new)
+print(rfc.predict(x_new_fil))
